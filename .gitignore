@@ -1,0 +1,5 @@
+.archify/
+.superpowers/
+docs/*.finalize*.json
+docs/*.delivery.json
+docs/*.browser-check.json

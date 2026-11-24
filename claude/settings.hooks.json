@@ -1,0 +1,13 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      { "hooks": [ { "type": "command", "command": "node ~/.claude/hooks/router-prompt.mjs" } ] }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash|PowerShell",
+        "hooks": [ { "type": "command", "command": "node ~/.claude/hooks/candados-git.mjs" } ]
+      }
+    ]
+  }
+}

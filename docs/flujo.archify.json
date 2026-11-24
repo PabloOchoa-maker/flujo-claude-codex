@@ -1,0 +1,292 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "Flujo de trabajo: Claude Code + Codex",
+    "locale": "es",
+    "quality_profile": "showcase",
+    "output": "docs/index.html"
+  },
+  "lanes": [
+    {
+      "id": "persona",
+      "label": "Tú (decides y apruebas)"
+    },
+    {
+      "id": "claude",
+      "label": "Claude Code (entiende, especifica, revisa)"
+    },
+    {
+      "id": "atajo",
+      "label": "Atajo: feature chica",
+      "variant": "exception"
+    },
+    {
+      "id": "codex",
+      "label": "Codex (implementa)"
+    },
+    {
+      "id": "repo",
+      "label": "Repositorio / git"
+    }
+  ],
+  "phases": [
+    {
+      "id": "definir",
+      "label": "Definir",
+      "fromCol": 0,
+      "toCol": 1
+    },
+    {
+      "id": "planificar",
+      "label": "Planificar + aprobar",
+      "fromCol": 2,
+      "toCol": 3,
+      "variant": "emphasis"
+    },
+    {
+      "id": "construir",
+      "label": "Implementar + revisar",
+      "fromCol": 4,
+      "toCol": 5,
+      "variant": "dashed"
+    }
+  ],
+  "mainPath": [
+    "idea",
+    "forge",
+    "analista",
+    "plan",
+    "aprueba",
+    "codex",
+    "revision",
+    "pr"
+  ],
+  "nodes": [
+    {
+      "id": "idea",
+      "lane": "persona",
+      "col": 0,
+      "type": "external",
+      "label": "Idea o pedido",
+      "sublabel": "a medio formar"
+    },
+    {
+      "id": "aprueba",
+      "lane": "persona",
+      "col": 3,
+      "type": "security",
+      "label": "«Sí» al plan",
+      "sublabel": "permiso para delegar",
+      "tag": "puerta"
+    },
+    {
+      "id": "forge",
+      "lane": "claude",
+      "col": 0,
+      "type": "backend",
+      "label": "bmad-forge-idea",
+      "sublabel": "opcional: pulir idea"
+    },
+    {
+      "id": "analista",
+      "lane": "claude",
+      "col": 1,
+      "type": "backend",
+      "label": "/analista",
+      "sublabel": "grilling + BMAD",
+      "tag": "niveles 2-4"
+    },
+    {
+      "id": "plan",
+      "lane": "claude",
+      "col": 2,
+      "type": "backend",
+      "label": "writing-plans",
+      "sublabel": "lotes con criterios"
+    },
+    {
+      "id": "revision",
+      "lane": "claude",
+      "col": 5,
+      "type": "security",
+      "label": "Revisión",
+      "sublabel": "diff + pruebas",
+      "tag": "verification"
+    },
+    {
+      "id": "brainstorm",
+      "lane": "atajo",
+      "col": 1,
+      "type": "backend",
+      "label": "brainstorming",
+      "sublabel": "en vez de /analista"
+    },
+    {
+      "id": "codex",
+      "lane": "codex",
+      "col": 4,
+      "type": "messagebus",
+      "label": "codex-driven-dev",
+      "sublabel": "encargo autocontenido",
+      "tag": "Codex"
+    },
+    {
+      "id": "handoff",
+      "lane": "repo",
+      "col": 1,
+      "type": "database",
+      "label": "docs/",
+      "sublabel": "handoff-specifier.md"
+    },
+    {
+      "id": "planfile",
+      "lane": "repo",
+      "col": 2,
+      "type": "database",
+      "label": "docs/encargos/",
+      "sublabel": "AAAA-MM-DD-tema.md"
+    },
+    {
+      "id": "rama",
+      "lane": "repo",
+      "col": 4,
+      "type": "database",
+      "label": "Rama / worktree",
+      "sublabel": "commits del lote"
+    },
+    {
+      "id": "pr",
+      "lane": "repo",
+      "col": 5,
+      "type": "cloud",
+      "label": "PR / MR",
+      "sublabel": "registro de lo hecho",
+      "tag": "nunca merge local"
+    }
+  ],
+  "edges": [
+    {
+      "id": "e-idea-forge",
+      "from": "idea",
+      "to": "forge",
+      "label": "pedido"
+    },
+    {
+      "id": "e-forge-analista",
+      "from": "forge",
+      "to": "analista",
+      "label": "brief"
+    },
+    {
+      "id": "e-analista-plan",
+      "from": "analista",
+      "to": "plan",
+      "label": "spec",
+      "variant": "emphasis"
+    },
+    {
+      "id": "e-analista-docs",
+      "from": "analista",
+      "to": "handoff",
+      "label": "requisitos",
+      "variant": "dashed",
+      "role": "branch"
+    },
+    {
+      "id": "e-idea-brain",
+      "from": "idea",
+      "to": "brainstorm",
+      "label": "feature chica",
+      "variant": "dashed",
+      "role": "branch"
+    },
+    {
+      "id": "e-brain-plan",
+      "from": "brainstorm",
+      "to": "plan",
+      "variant": "dashed",
+      "role": "branch"
+    },
+    {
+      "id": "e-plan-file",
+      "from": "plan",
+      "to": "planfile",
+      "label": "guarda",
+      "variant": "dashed",
+      "role": "branch"
+    },
+    {
+      "id": "e-plan-aprueba",
+      "from": "plan",
+      "to": "aprueba",
+      "label": "propone",
+      "variant": "emphasis"
+    },
+    {
+      "id": "e-aprueba-codex",
+      "from": "aprueba",
+      "to": "codex",
+      "label": "delegar lotes",
+      "variant": "security"
+    },
+    {
+      "id": "e-codex-rama",
+      "from": "codex",
+      "to": "rama",
+      "label": "implementa",
+      "variant": "dashed",
+      "role": "branch"
+    },
+    {
+      "id": "e-codex-rev",
+      "from": "codex",
+      "to": "revision",
+      "label": "resumen + diff"
+    },
+    {
+      "id": "e-rev-codex",
+      "from": "revision",
+      "to": "codex",
+      "label": "corregir",
+      "variant": "security",
+      "role": "error"
+    },
+    {
+      "id": "e-rev-pr",
+      "from": "revision",
+      "to": "pr",
+      "label": "pruebas OK",
+      "variant": "emphasis"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Quién hace qué",
+      "items": [
+        "Claude: entiende, diseña, especifica, revisa y mide",
+        "Codex: tareas grandes y bien acotadas",
+        "Antes de delegar, Claude avisa y espera tu «sí»"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Sin delegar ni Superpowers",
+      "items": [
+        "Preguntas, explicaciones y cambios pequeños: Claude directo",
+        "Bug no obvio: systematic-debugging",
+        "Documentos, memoria y config: fuera de Superpowers"
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "Extras",
+      "items": [
+        "Revisar un PR uno mismo: bmad-walkthrough",
+        "Diagramas: archify en .archify/ (no se commitea)",
+        "Hooks: router de recordatorios y candados de git"
+      ]
+    }
+  ]
+}
