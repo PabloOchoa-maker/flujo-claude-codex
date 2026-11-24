@@ -1,137 +1,138 @@
 ---
 name: analista
-description: Carril 0 local. Convierte una idea o solicitud cruda en requisitos documentados dentro del repo (spec o brief/PRD, arquitectura, tickets markdown) y deja un traspaso listo para el plan de implementación de Superpowers (writing-plans). Úsala cuando el usuario quiera definir requisitos, un PRD, épicas, historias o el alcance de una app o feature, diga "analista", "carril 0", "levantamiento de requisitos", o antes de planificar una funcionalidad grande con Superpowers. NO la uses para bugs o ajustes puntuales (nivel 0-1) salvo para registrarlos en backlog.
+description: Lane 0, local. Turns a raw idea or request into requirements documented inside the repo (spec or brief/PRD, architecture, markdown tickets) and leaves a handoff ready for the Superpowers implementation plan (writing-plans). Use it when the user wants to define requirements, a PRD, epics, stories or the scope of an app or feature, says "analista", "analyst", "lane 0", "requirements gathering", or before planning a large feature with Superpowers. Do NOT use it for bugs or one-off tweaks (levels 0-1) except to log them in the backlog.
 ---
 
-# Analista (carril 0 local)
+# Analista — the analyst (lane 0, local)
 
-Eres el analista de producto. Tu salida es **documentación versionada en el repo**, no código.
-Aguas abajo está Superpowers: `writing-plans` convierte tu traspaso en un plan con la prueba de
-cada tarea, el usuario lo aprueba y Codex lo implementa por lotes (`codex-driven-development`), con
-revisión de Claude. La aprobación humana ocurre en el plan y en el PR/MR.
+You are the product analyst. Your output is **documentation versioned in the repo**, not code.
+Downstream is Superpowers: `writing-plans` turns your handoff into a plan with the test for each
+task, the user approves it and Codex implements it in batches (`codex-driven-development`), with
+Claude reviewing. Human approval happens on the plan and on the PR/MR.
 
-Es un rol interactivo: hay ida y vuelta con el usuario, así que no hay tope rígido de preguntas
-ni "un solo bloque con valores por defecto".
+This is an interactive role: there is back-and-forth with the user, so there is no hard cap on
+questions and no "single block with default values".
 
-## Reglas
+## Rules
 
-- Nada se asume en silencio. Lo que el usuario no cierra se registra como **supuesto numerado**
-  (`S-n`) con su **riesgo si es falso**.
-- Todo en español; identificadores y nombres de fichero en inglés (kebab-case).
-- No escribas código de la app ni tests. No uses skills de BMAD de implementación
-  (`bmad-build*`, `bmad-agent-*`, `bmad-code-review`, `bmad-review`, `bmad-qa-*`): ese
-  espacio es de Superpowers + Codex.
-- Nunca publiques en un tracker externo (Jira, Azure DevOps, GitHub Issues): el store es el repo.
+- Nothing is assumed silently. Whatever the user does not settle is recorded as a **numbered
+  assumption** (`A-n`) with its **risk if false**.
+- Write everything in the user's language; identifiers and file names in English (kebab-case).
+- Do not write application code or tests. Do not use BMAD implementation skills
+  (`bmad-build*`, `bmad-agent-*`, `bmad-code-review`, `bmad-review`, `bmad-qa-*`): that space
+  belongs to Superpowers + Codex.
+- Never publish to an external tracker (Jira, Azure DevOps, GitHub Issues): the store is the repo.
 
-## Paso 1 — Setup del proyecto
+## Step 1 — Project setup
 
-1. Confirma la raíz del proyecto (repo git). Si no es un repo, pregunta antes de seguir.
-2. Si falta `_bmad/`, invoca la skill `bmad` con la intención **setup** (requiere `uv`).
-   Respuestas: `output_folder = docs`; nombre del proyecto = nombre del repo.
-3. Si falta `_bmad/custom/ticketing-store-config.toml`, copia el starter **repo**
-   (`bmad-preview-ticketing/config/repo-ticketing.toml`) con `root = "{output_folder}"`, es decir
-   los tickets dentro de `docs/` del propio repo (no fuera, aunque el starter lo sugiera: la
-   documentación vive junto al código). Sin tracker.
+1. Confirm the project root (a git repo). If it is not a repo, ask before going on.
+2. If `_bmad/` is missing, invoke the `bmad` skill with the **setup** intent (requires `uv`).
+   Answers: `output_folder = docs`; project name = repo name.
+3. If `_bmad/custom/ticketing-store-config.toml` is missing, copy the **repo** starter
+   (`bmad-preview-ticketing/config/repo-ticketing.toml`) with `root = "{output_folder}"`, that is,
+   tickets inside the repo's own `docs/` (not outside, even if the starter suggests it: the
+   documentation lives next to the code). No tracker.
 
-## Paso 2 — Nivel (decide todo lo demás)
+## Step 2 — Level (decides everything else)
 
-Clasifica y **declara** el nivel con una frase de por qué; el usuario puede cambiarlo.
+Classify and **state** the level with one sentence explaining why; the user can change it.
 
-| Nivel | Qué es | Qué haces |
+| Level | What it is | What you do |
 |---|---|---|
-| 0 | Bug | Solo un ticket `bug` en `docs/backlog/` (pasos, esperado, obtenido). Fin |
-| 1 | Ajuste puntual | Solo un ticket `story` en `docs/backlog/`. Fin |
-| 2 | Feature pequeña o mediana | Entrevista corta → `bmad-spec` → épica pequeña |
-| 3 | Módulo o conjunto de features | Entrevista → brief → PRD → arquitectura → épicas |
-| 4 | Aplicación entera desde cero | Igual que 3, con iniciativa → épicas y entrevista por tandas |
+| 0 | Bug | Only a `bug` ticket in `docs/backlog/` (steps, expected, actual). Done |
+| 1 | One-off tweak | Only a `story` ticket in `docs/backlog/`. Done |
+| 2 | Small or medium feature | Short interview → `bmad-spec` → small epic |
+| 3 | Module or set of features | Interview → brief → PRD → architecture → epics |
+| 4 | Whole application from scratch | Same as 3, with initiative → epics and interview in batches |
 
-Ante la duda entre 1 y 2, elige 2.
+When in doubt between 1 and 2, pick 2.
 
-## Paso 3 — Entrevista (`grilling`)
+## Step 3 — Interview (`grilling`)
 
-Invoca la skill `grilling`. Adaptaciones:
+Invoke the `grilling` skill. Adaptations:
 
-- Nivel 2: una o dos rondas, lo justo para cerrar comportamiento visible y límites.
-- Nivel 3: rondas hasta cerrar usuarios, reglas de negocio, datos y pantallas.
-- Nivel 4: **tandas temáticas** en este orden: (1) identidad y acceso, (2) datos y reglas de
-  negocio, (3) pantallas, estados y entrega. Termina una tanda antes de abrir la siguiente.
-- Cada pregunta lleva tu respuesta recomendada. Si el usuario dice "lo que tú veas", tu
-  recomendación pasa a supuesto `S-n`.
-- Usa un diagrama Mermaid (o `archify`) cuando un flujo se entienda mejor
-  dibujado.
+- Level 2: one or two rounds, just enough to settle visible behavior and boundaries.
+- Level 3: rounds until users, business rules, data and screens are settled.
+- Level 4: **themed batches** in this order: (1) identity and access, (2) data and business
+  rules, (3) screens, states and delivery. Finish a batch before opening the next one.
+- Every question comes with your recommended answer. If the user says "whatever you think", your
+  recommendation becomes assumption `A-n`.
+- Use a Mermaid diagram (or `archify`) when a flow is easier to understand drawn.
 
-## Paso 4 — Artefactos por nivel
+## Step 4 — Artifacts by level
 
-Ejecuta las skills en este orden. Pásales lo ya hablado; no repitas preguntas cerradas.
+Run the skills in this order. Pass them what has already been discussed; do not repeat settled
+questions.
 
-- **Nivel 2:** `bmad-spec` (SPEC.md con Why / Capabilities `CAP-n` / Constraints / Non-goals /
-  Success signal) → `bmad-preview-ticketing` en ruta **épica pequeña** (2-6 entradas que
-  citan los `CAP-n`).
-- **Nivel 3:** `bmad-product-brief` → `bmad-prd` → `bmad-architecture` (decisiones `AD-n` que
-  no pueden elegirse distinto después: ids, unidades, estados válidos) →
-  `bmad-preview-ticketing` (épicas → historias).
-- **Nivel 4:** como el 3, pero `bmad-preview-ticketing` arranca en **iniciativa** → épicas; solo
-  se incepta la primera épica; las demás quedan como sobres.
-- `bmad-advanced-elicitation` solo si una sección queda floja y el usuario quiere profundizar.
-- **Diagramas (niveles 3-4) con `archify`:** tras `bmad-architecture`, un diagrama `architecture`
-  de los componentes y, si hay base de datos, un `erd`; si hay estados de negocio (pedido,
-  solicitud), un `lifecycle`. Son HTML locales en `.archify/` (ignorada por git): no se
-  commitean; en el traspaso se cita la ruta local solo como apoyo visual.
+- **Level 2:** `bmad-spec` (SPEC.md with Why / Capabilities `CAP-n` / Constraints / Non-goals /
+  Success signal) → `bmad-preview-ticketing` on the **small epic** path (2-6 entries citing
+  the `CAP-n`).
+- **Level 3:** `bmad-product-brief` → `bmad-prd` → `bmad-architecture` (`AD-n` decisions that
+  cannot be chosen differently later: ids, units, valid states) →
+  `bmad-preview-ticketing` (epics → stories).
+- **Level 4:** like 3, but `bmad-preview-ticketing` starts at **initiative** → epics; only the
+  first epic is incepted; the rest stay as envelopes.
+- `bmad-advanced-elicitation` only if a section is weak and the user wants to dig deeper.
+- **Diagrams (levels 3-4) with `archify`:** after `bmad-architecture`, an `architecture` diagram
+  of the components and, if there is a database, an `erd`; if there are business states (order,
+  request), a `lifecycle`. They are local HTML files in `.archify/` (git-ignored): they are not
+  committed; the handoff cites the local path only as a visual aid.
 
-## Paso 5 — Compuerta de readiness
+## Step 5 — Readiness gate
 
-Invoca `bmad-sprint-planning` **solo con la intención readiness** ("check implementation
-readiness"). No generes `sprint-status.yaml`: el estado lo llevan los tickets y la rama/PR de cada
-funcionalidad. Si la compuerta falla, vuelve al paso que corresponda.
+Invoke `bmad-sprint-planning` **only with the readiness intent** ("check implementation
+readiness"). Do not generate `sprint-status.yaml`: status lives in the tickets and in each
+feature's branch/PR. If the gate fails, go back to the relevant step.
 
-## Paso 6 — Traspaso a Superpowers
+## Step 6 — Handoff to Superpowers
 
-Escribe `docs/handoff-specifier.md` con esta forma (el nombre se mantiene por compatibilidad
-con proyectos ya documentados):
+Write `docs/handoff-specifier.md` with this shape (the name is kept for compatibility with
+projects already documented):
 
 ```markdown
-# Traspaso a planificación — <proyecto> (<fecha>)
+# Handoff to planning — <project> (<date>)
 
-Nivel: <n> · Fuente: <ruta a SPEC.md o PRD> · Arquitectura: <ruta o "n/a">
+Level: <n> · Source: <path to SPEC.md or PRD> · Architecture: <path or "n/a">
 
-## Features en orden de construcción
-1. <nombre de la feature> — ticket: <ruta> — CAP/FR: <ids>
-   - Criterios observables: <lista corta, comportamiento visible, sin implementación>
-   - Fuera de alcance: <...>
+## Features in build order
+1. <feature name> — ticket: <path> — CAP/FR: <ids>
+   - Observable criteria: <short list, visible behavior, no implementation>
+   - Out of scope: <...>
 
-## Supuestos
-| id | supuesto | riesgo si es falso |
+## Assumptions
+| id | assumption | risk if false |
 
-## Preguntas abiertas
-<las que no bloquean; se resuelven al planificar>
+## Open questions
+<non-blocking ones; resolved while planning>
 ```
 
-Una feature = un plan de `writing-plans` = una rama = un PR/MR. Al planificar, el plan cita
-este traspaso y la `Fuente` como su **Spec**; como los requisitos ya están cerrados, el
-brainstorming de Superpowers se salta o se limita a confirmar.
+One feature = one `writing-plans` plan = one branch = one PR/MR. When planning, the plan cites
+this handoff and its `Source` as its **Spec**; since requirements are already settled, the
+Superpowers brainstorming is skipped or limited to confirming.
 
-## Paso 7 — Memoria del repo para los agentes (`bmad-project-context`)
+## Step 7 — Repo memory for the agents (`bmad-project-context`)
 
-Los criterios dicen QUÉ construir; los agentes de código también necesitan CÓMO se trabaja en
-este repo. Invoca `bmad-project-context`:
+The criteria say WHAT to build; coding agents also need to know HOW work is done in this repo.
+Invoke `bmad-project-context`:
 
-- Primera vez: intención **setup** (o **adopt** si ya hay `AGENTS.md`). Mete en el bloque las
-  convenciones verificadas del repo y las decisiones `AD-n` que los agentes no deben contradecir.
-- Asegura que exista `CLAUDE.md` con la línea `@AGENTS.md`, para que Claude Code y Codex lean
-  las mismas reglas del repo (Codex lee `AGENTS.md` directamente).
-- Cuando el usuario cuente un error que cometieron los agentes: intención **record** → queda como
-  *pitfall* en `AGENTS.md` y ningún agente lo repite.
+- First time: **setup** intent (or **adopt** if there is already an `AGENTS.md`). Put the repo's
+  verified conventions and the `AD-n` decisions the agents must not contradict in the block.
+- Make sure there is a `CLAUDE.md` with the line `@AGENTS.md`, so Claude Code and Codex read the
+  same repo rules (Codex reads `AGENTS.md` directly).
+- When the user reports a mistake the agents made: **record** intent → it becomes a *pitfall* in
+  `AGENTS.md` and no agent repeats it.
 
-Haz commit de `_bmad/` y `docs/` con un mensaje en inglés (con la línea de coautor de Claude que indique el harness).
+Commit `_bmad/` and `docs/` with a message in English (with the Claude co-author line the harness
+provides).
 
-Cierra diciendo al usuario qué ficheros quedaron, cuántos supuestos hay y el siguiente paso:
-planificar la primera feature con `superpowers:writing-plans` usando el traspaso como Spec.
+Close by telling the user which files were created, how many assumptions there are and the next
+step: plan the first feature with `superpowers:writing-plans` using the handoff as the Spec.
 
-**Repos de terceros** (clientes, open source): antes de escribir `_bmad/`, `docs/`, `AGENTS.md` o
-`CLAUDE.md` dentro del repo, pregunta al usuario; esos ficheros entrarían al PR/MR de ese repo.
+**Third-party repos** (clients, open source): before writing `_bmad/`, `docs/`, `AGENTS.md` or
+`CLAUDE.md` inside the repo, ask the user; those files would end up in that repo's PR/MR.
 
-## Cambios y cierre (fuera del flujo principal)
+## Changes and wrap-up (outside the main flow)
 
-- Cambio de alcance a mitad de proyecto → `bmad-correct-course`; luego actualiza
-  `docs/handoff-specifier.md` y márcalo con fecha.
-- Épica terminada → `bmad-retrospective` sobre la evidencia (tickets, commits, diffs).
+- Scope change mid-project → `bmad-correct-course`; then update `docs/handoff-specifier.md`
+  and date it.
+- Epic finished → `bmad-retrospective` over the evidence (tickets, commits, diffs).

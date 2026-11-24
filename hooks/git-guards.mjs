@@ -1,8 +1,8 @@
-// PreToolUse (Bash y PowerShell): candados de git para Claude y Codex.
-//   1. Nada de commits directos en main/master.
-//   2. Nada de push hacia main/master ni merge estando en main/master: todo entra por PR/MR.
-//   3. Nunca borrar ramas (ni local ni remota).
-// Solo afecta a comandos que lanza Claude Code; el git que escribes a mano en tu terminal no pasa por aquí.
+// PreToolUse hook (Bash and PowerShell): git guards for Claude and Codex.
+//   1. No direct commits on main/master.
+//   2. No push to main/master and no merge while on main/master: everything lands through a PR/MR.
+//   3. Never delete branches (local or remote).
+// It only affects commands Claude Code runs; git you type by hand in your terminal is not checked.
 import { readFileSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 import path from "node:path";
@@ -26,14 +26,14 @@ function deny(reason) {
       hookSpecificOutput: {
         hookEventName: "PreToolUse",
         permissionDecision: "deny",
-        permissionDecisionReason: `Candado de git: ${reason}`,
+        permissionDecisionReason: `Git guard: ${reason}`,
       },
     }),
   );
   process.exit(0);
 }
 
-// Cambios de rama dentro del mismo comando (git switch master && git commit ...).
+// Branch switches inside the same command (git switch master && git commit ...).
 const simulated = new Map();
 
 function currentBranch(dir) {
@@ -53,7 +53,7 @@ function tokenize(segment) {
   return (segment.match(/"[^"]*"|'[^']*'|\S+/g) ?? []).map((t) => t.replace(/^["']|["']$/g, ""));
 }
 
-// Separa el comando en tramos (&&, ||, ;, |, saltos de línea) y sigue los `cd`.
+// Split the command into segments (&&, ||, ;, |, newlines) and follow `cd`.
 let dir = baseCwd;
 for (const segment of command.split(/&&|\|\||;|\||\r?\n/)) {
   const tokens = tokenize(segment.trim());
@@ -69,7 +69,7 @@ for (const segment of command.split(/&&|\|\||;|\||\r?\n/)) {
   const gi = tokens.findIndex((t) => t === "git" || /[\\/]git(\.exe)?$/i.test(t));
   if (gi === -1) continue;
 
-  // Opciones globales de git antes del subcomando (-C ruta, -c clave=valor, etc.).
+  // Global git options before the subcommand (-C path, -c key=value, etc.).
   let repoDir = dir;
   let i = gi + 1;
   while (i < tokens.length && tokens[i].startsWith("-")) {
@@ -96,38 +96,38 @@ for (const segment of command.split(/&&|\|\||;|\||\r?\n/)) {
   if (sub === "commit") {
     const branch = currentBranch(repoDir);
     if (branch && PROTECTED.has(branch)) {
-      deny(`no se hacen commits directos en '${branch}'. Crea una rama de funcionalidad (git switch -c feature/<tema>) y súbela por PR/MR.`);
+      deny(`no direct commits on '${branch}'. Create a feature branch (git switch -c feature/<topic>) and land it through a PR/MR.`);
     }
   }
 
   if (sub === "merge") {
     const branch = currentBranch(repoDir);
     if (branch && PROTECTED.has(branch) && !args.includes("--abort")) {
-      deny(`no se mezcla nada estando en '${branch}'. Los cambios llegan a la rama principal solo por PR/MR.`);
+      deny(`no merging while on '${branch}'. Changes reach the main branch only through a PR/MR.`);
     }
   }
 
   if (sub === "branch") {
     if (args.some((a) => /^(-d|-D|--delete)$/.test(a) || /^-[a-zA-Z]*[dD][a-zA-Z]*$/.test(a))) {
-      deny("nunca se borran ramas.");
+      deny("branches are never deleted.");
     }
   }
 
   if (sub === "push") {
-    if (args.some((a) => a === "--delete" || a === "-d")) deny("nunca se borran ramas remotas.");
+    if (args.some((a) => a === "--delete" || a === "-d")) deny("remote branches are never deleted.");
     if (args.some((a) => a === "--all" || a === "--mirror")) {
-      deny("push --all/--mirror subiría también la rama principal. Sube solo tu rama.");
+      deny("push --all/--mirror would also push the main branch. Push only your branch.");
     }
-    const refspecs = args.filter((a) => !a.startsWith("-")).slice(1); // el primero es el remoto
-    if (refspecs.some((r) => r.startsWith(":"))) deny("nunca se borran ramas remotas.");
+    const refspecs = args.filter((a) => !a.startsWith("-")).slice(1); // the first one is the remote
+    if (refspecs.some((r) => r.startsWith(":"))) deny("remote branches are never deleted.");
     const targets = refspecs.map((r) => r.replace(/^\+/, "").split(":").pop().replace(/^refs\/heads\//, ""));
     if (targets.some((t) => PROTECTED.has(t))) {
-      deny(`no se sube directo a '${targets.find((t) => PROTECTED.has(t))}'. Sube tu rama y abre un PR/MR.`);
+      deny(`no pushing straight to '${targets.find((t) => PROTECTED.has(t))}'. Push your branch and open a PR/MR.`);
     }
     if (refspecs.length === 0 || targets.includes("HEAD")) {
       const branch = currentBranch(repoDir);
       if (branch && PROTECTED.has(branch)) {
-        deny(`estás en '${branch}': este push iría directo a la rama principal. Crea una rama y abre un PR/MR.`);
+        deny(`you are on '${branch}': this push would go straight to the main branch. Create a branch and open a PR/MR.`);
       }
     }
   }

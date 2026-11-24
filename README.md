@@ -1,65 +1,72 @@
-# Flujo Claude Code + Codex
+# Claude Code + Codex workflow
 
-Un flujo de trabajo para programar con dos agentes: **Claude Code piensa y revisa, Codex escribe
-el código.** Tú decides qué se construye y das el «sí» antes de que nada se implemente.
+A workflow for coding with two AI agents: **Claude Code thinks and reviews, Codex writes the
+code.** You decide what gets built and give the "yes" before anything is implemented.
 
-**[Ver el diagrama interactivo →](https://pabloochoa-maker.github.io/flujo-claude-codex/)**
+**[See the interactive diagram →](https://pabloochoa-maker.github.io/flujo-claude-codex/)**
 
-## Por qué
+## Why
 
-Un solo agente que entiende, planifica, implementa y revisa gasta muchos tokens y se revisa a sí
-mismo. Repartir el trabajo deja a cada uno en lo que hace mejor:
+A single agent that understands, plans, implements and reviews burns a lot of tokens and ends up
+reviewing its own work. Splitting the work lets each one do what it does best:
 
-| Quién | Hace | No hace |
+| Who | Does | Doesn't |
 |---|---|---|
-| **Tú** | Cuentas la idea, apruebas el plan, revisas el PR | — |
-| **Claude Code** | Entiende, entrevista, escribe requisitos y plan, revisa el diff y corre las pruebas | Implementar lo grande |
-| **Codex** | Implementa el plan por lotes, con TDD y un commit por tarea | Decidir el diseño, hacer push o merge |
-| **git** | Guarda requisitos, planes y el registro de lo hecho (la descripción del PR) | — |
+| **You** | Describe the idea, approve the plan, review the PR | — |
+| **Claude Code** | Understands, interviews you, writes requirements and the plan, reviews the diff and runs the tests | Implement the big work |
+| **Codex** | Implements the plan in batches, with TDD and one commit per task | Decide the design, push or merge |
+| **git** | Stores requirements, plans and the record of the work (the PR description) | — |
 
-## El recorrido
+It follows **spec-driven development**: before any code is written, the idea becomes
+requirements, acceptance criteria and a plan in batches, each task with the test that proves it
+is done.
 
-```
-idea → bmad-forge-idea (opcional) → /analista → writing-plans → tu «sí» → Codex implementa → Claude revisa → PR
-                                         │                                       ▲              │
-                         feature chica: brainstorming                            └── corregir ──┘
-```
-
-1. **Definir.** `/analista` clasifica el pedido (nivel 0-4), te entrevista con `grilling` y deja
-   los requisitos en `docs/` con un traspaso (`docs/handoff-specifier.md`). Para una feature chica
-   basta `brainstorming`.
-2. **Planificar.** `writing-plans` convierte el traspaso en un plan con tareas y su prueba, guardado
-   en `docs/encargos/`.
-3. **Aprobar.** Tu «sí» al plan es el permiso para delegar todos sus lotes.
-4. **Implementar.** `codex-driven-development` agrupa las tareas en lotes de 3 a 5 y se las pasa a
-   Codex en una rama o worktree.
-5. **Revisar.** Claude lee el diff y corre las pruebas él mismo. Si algo falla, vuelve a Codex.
-6. **Cerrar.** Se abre un PR con lo pedido, lo decidido, lo que hizo cada agente y las pruebas.
-   Nunca hay merge local ni se borran ramas.
-
-## Qué trae este repo
+## The flow
 
 ```
-claude/CLAUDE-seccion.md      reglas del reparto, se añaden a ~/.claude/CLAUDE.md
-claude/settings.hooks.json    registro de los hooks
-hooks/router-prompt.mjs       recuerda el reparto cuando el mensaje habla de código o de requisitos
-hooks/candados-git.mjs        bloquea commits y push a main, merge local y borrar ramas
-skills/analista/              requisitos → docs/ + traspaso para el plan
-skills/codex-driven-development/   ejecuta el plan con Codex por lotes y Claude revisando
-install/install.ps1           instala todo lo anterior y las piezas de terceros
-install/verificar.ps1         comprueba que quedó funcionando
-docs/                         el diagrama (index.html) y su fuente archify
-terceros.md                   de dónde sale cada pieza que no es de este repo
+idea → bmad-forge-idea (optional) → /analista → writing-plans → your "yes" → Codex implements → Claude reviews → PR
+                                        │                                          ▲               │
+                         small feature: brainstorming                              └──── fix ──────┘
 ```
 
-Superpowers, el plugin de Codex, BMAD, `grilling` y archify **no se copian**: el instalador los trae
-desde su repositorio original. Ver [terceros.md](terceros.md).
+1. **Define.** `/analista` classifies the request (level 0-4), interviews you with `grilling` and
+   writes the requirements to `docs/` with a handoff (`docs/handoff-specifier.md`). For a small
+   feature, `brainstorming` is enough.
+2. **Plan.** `writing-plans` turns the handoff into a plan of tasks, each with its test, saved in
+   `docs/briefs/`.
+3. **Approve.** Your "yes" to the plan is the permission to delegate all its batches.
+4. **Implement.** `codex-driven-development` groups tasks into batches of 3 to 5 and hands them to
+   Codex on a branch or worktree.
+5. **Review.** Claude reads the diff and runs the tests itself. If something fails, it goes back
+   to Codex.
+6. **Close.** A PR is opened describing what was asked, what was decided, what each agent did and
+   the tests. There is never a local merge and branches are never deleted.
 
-## Instalación (Windows)
+## What's in this repo
 
-Necesitas [Claude Code](https://docs.claude.com/claude-code), el
-[CLI de Codex](https://github.com/openai/codex) con sesión iniciada, Node 20+, git y, para BMAD,
-Python 3.10+ y `uv`.
+```
+claude/CLAUDE-section.md          split rules, appended to ~/.claude/CLAUDE.md
+claude/settings.hooks.json        hook registration
+hooks/router-prompt.mjs           reminds the split when a message is about code or requirements
+hooks/git-guards.mjs              blocks commits and pushes to main, local merges and branch deletion
+skills/analista/                  requirements → docs/ + handoff for the plan
+skills/codex-driven-development/  runs the plan with Codex in batches while Claude reviews
+install/install.ps1               installs all of the above and the third-party pieces
+install/verify.ps1                checks that everything works
+docs/                             the diagram (index.html), its archify source and licenses
+THIRD-PARTY.md                    where every piece that is not part of this repo comes from
+```
+
+Superpowers, the Codex plugin, BMAD, `grilling` and archify are **not copied**: the installer
+fetches them from their original repositories. See [THIRD-PARTY.md](THIRD-PARTY.md).
+
+The skills and rules talk to you and write documents in your own language.
+
+## Installation (Windows)
+
+You need [Claude Code](https://docs.claude.com/claude-code), the
+[Codex CLI](https://github.com/openai/codex) signed in, Node 20+, git and, for BMAD,
+Python 3.10+ and `uv`.
 
 ```powershell
 git clone https://github.com/PabloOchoa-maker/flujo-claude-codex.git
@@ -67,7 +74,7 @@ cd flujo-claude-codex
 powershell -ExecutionPolicy Bypass -File install\install.ps1
 ```
 
-Después, dentro de Claude Code:
+Then, inside Claude Code:
 
 ```
 /plugin install superpowers@claude-plugins-official
@@ -76,7 +83,7 @@ Después, dentro de Claude Code:
 /codex:setup
 ```
 
-No actives el *review gate* de Codex. En Windows, si Codex rechaza todos los comandos, añade esto a
+Do not turn on Codex's *review gate*. On Windows, if Codex rejects every command, add this to
 `~/.codex/config.toml`:
 
 ```toml
@@ -84,21 +91,21 @@ No actives el *review gate* de Codex. En Windows, si Codex rechaza todos los com
 sandbox = "unelevated"
 ```
 
-Comprueba la instalación:
+Check the installation:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File install\verificar.ps1
+powershell -ExecutionPolicy Bypass -File install\verify.ps1
 ```
 
-El instalador hace copia de seguridad de `settings.json` y `CLAUDE.md` antes de tocarlos
-(`*.bak-<fecha>`) y no duplica nada si lo corres dos veces.
+The installer backs up `settings.json` and `CLAUDE.md` before touching them (`*.bak-<date>`) and
+does not duplicate anything if you run it twice.
 
-## Regenerar el diagrama
+## Regenerating the diagram
 
 ```powershell
-node ~/.claude/skills/archify/bin/archify.mjs finalize workflow docs/flujo.archify.json docs/index.html --quality showcase
+node ~/.claude/skills/archify/bin/archify.mjs finalize workflow docs/workflow.archify.json docs/index.html --quality showcase
 ```
 
-## Licencia
+## License
 
-MIT para lo que es de este repo ([LICENSE](LICENSE)). Las piezas de terceros conservan la suya.
+MIT for what belongs to this repo ([LICENSE](LICENSE)). Third-party pieces keep their own.

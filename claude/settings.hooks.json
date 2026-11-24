@@ -6,7 +6,7 @@
     "PreToolUse": [
       {
         "matcher": "Bash|PowerShell",
-        "hooks": [ { "type": "command", "command": "node ~/.claude/hooks/candados-git.mjs" } ]
+        "hooks": [ { "type": "command", "command": "node ~/.claude/hooks/git-guards.mjs" } ]
       }
     ]
   }

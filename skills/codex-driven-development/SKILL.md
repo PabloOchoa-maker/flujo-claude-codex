@@ -5,84 +5,89 @@ description: Use INSTEAD OF superpowers:subagent-driven-development when executi
 
 # Codex-Driven Development
 
-Versión adaptada de `superpowers:subagent-driven-development`
-([obra/superpowers](https://github.com/obra/superpowers), MIT, © 2025 Jesse Vincent) al reparto Claude + Codex:
-**Claude coordina y revisa; Codex implementa.** Todo lo que esta skill no cambia se
-hace como en la original (ledger, preflight, ciclo de correcciones, revisión final).
+An adaptation of `superpowers:subagent-driven-development`
+([obra/superpowers](https://github.com/obra/superpowers), MIT, © 2025 Jesse Vincent) to the
+Claude + Codex split: **Claude coordinates and reviews; Codex implements.** Everything this skill
+does not change is done as in the original (ledger, preflight, fix loop, final review).
 
-Scripts de Superpowers (la carpeta de versión cambia al actualizar):
+Superpowers scripts (the version folder changes when the plugin updates):
 
 ```bash
 SDD=$(ls -d ~/.claude/plugins/cache/claude-plugins-official/superpowers/*/skills/subagent-driven-development | tail -1)
 ```
 
-## Antes de empezar
+## Before starting
 
-1. El plan ya está aprobado por el usuario. Ese «sí» al plan cubre todos los lotes:
-   no se vuelve a preguntar entre lotes salvo por las cuatro paradas de la original
-   (algo irreversible, algo sensible de seguridad, push/merge/publicar, plan roto).
-2. Rama de trabajo, nunca `main`/`master`. En repos con rama protegida se trabaja en una rama propia y el resultado entra por MR.
-3. Workspace y ledger: `bash "$SDD/scripts/sdd-workspace" PLAN_FILE` y el ledger
-   `progress.md` como en la original. Tras compactar, manda el ledger + `git log`.
-4. Lee `$SDD/references/preflight.md` y haz el escaneo de conflictos.
+1. The plan has already been approved by the user. That "yes" to the plan covers every batch:
+   do not ask again between batches, except for the original's four stops (something
+   irreversible, something security-sensitive, push/merge/publish, a broken plan).
+2. Work on a branch, never on `main`/`master`. In repos with a protected branch, work on your own
+   branch and land the result through a PR/MR.
+3. Workspace and ledger: `bash "$SDD/scripts/sdd-workspace" PLAN_FILE` and the `progress.md`
+   ledger as in the original. After a context compaction, send the ledger + `git log`.
+4. Read `$SDD/references/preflight.md` and run the conflict scan.
 
-## Lotes en vez de tareas sueltas
+## Batches instead of single tasks
 
-Una ejecución de Codex arranca en frío y relee el repo: no se lanza una por tarea de
-5 minutos. Agrupa **tareas consecutivas que comparten archivos o interfaces**, de 3 a 5
-por lote (el plan entero si es corto). Nunca dos lotes de Codex en paralelo.
+A Codex run starts cold and re-reads the repo: do not launch one per 5-minute task. Group
+**consecutive tasks that share files or interfaces**, 3 to 5 per batch (the whole plan if it is
+short). Never run two Codex batches in parallel.
 
-Por cada lote:
+For each batch:
 
-1. Anota `BASE=$(git rev-parse HEAD)` en el ledger.
-2. Genera un brief por tarea: `bash "$SDD/scripts/task-brief" PLAN_FILE N`.
-3. Lanza **un** `Agent` con `subagent_type: "codex:codex-rescue"` y este encargo:
+1. Record `BASE=$(git rev-parse HEAD)` in the ledger.
+2. Generate one brief per task: `bash "$SDD/scripts/task-brief" PLAN_FILE N`.
+3. Launch **one** `Agent` with `subagent_type: "codex:codex-rescue"` and this brief:
 
 ```
-Implementa las tareas N..M del plan. Lee primero estos briefs, en orden; son tus
-requisitos con los valores exactos: <rutas de los briefs>.
-Contexto: <una línea de dónde encaja>. Interfaces de lotes anteriores: <firmas>.
-Ambigüedades ya resueltas: <decisiones>.
-Reglas: TDD (prueba que falla → código mínimo → prueba en verde), un commit por tarea,
-mensajes de commit con tu línea de coautor habitual (no la quites), no tocar archivos fuera de los briefs,
-no lanzar subagentes, no hacer push ni merge.
-Al terminar escribe <workspace>/batch-K-report.md con, por tarea: archivos tocados,
-commits, comando de prueba y su resultado, y dudas. Última línea del reporte y de tu
-respuesta: STATUS: DONE | DONE_WITH_CONCERNS | NEEDS_CONTEXT | BLOCKED.
-Si te falta información, NO adivines: para, escribe NEEDS_CONTEXT y la pregunta.
+Implement tasks N..M of the plan. First read these briefs, in order; they are your
+requirements with the exact values: <brief paths>.
+Context: <one line on where this fits>. Interfaces from earlier batches: <signatures>.
+Ambiguities already resolved: <decisions>.
+Rules: TDD (failing test → minimal code → green test), one commit per task,
+commit messages with your usual co-author line (do not remove it), do not touch files outside
+the briefs, do not launch subagents, do not push or merge.
+When done, write <workspace>/batch-K-report.md with, per task: files touched, commits, test
+command and its result, and open questions. Last line of the report and of your reply:
+STATUS: DONE | DONE_WITH_CONCERNS | NEEDS_CONTEXT | BLOCKED.
+If information is missing, do NOT guess: stop, write NEEDS_CONTEXT and the question.
 ```
 
-4. Según el estado: `DONE` → revisión. Cualquier otro → lee
-   `$SDD/references/handling-reports.md`. Si es `NEEDS_CONTEXT`, responde y reanuda
-   el mismo trabajo pidiendo a `codex:codex-rescue` que continúe (`--resume`).
+4. Depending on the status: `DONE` → review. Anything else → read
+   `$SDD/references/handling-reports.md`. If it is `NEEDS_CONTEXT`, answer and resume the same
+   work by asking `codex:codex-rescue` to continue (`--resume`).
 
-## Revisión (Claude)
+**Sandbox note.** Codex's sandbox can only write inside the directory it was launched from. If
+the plan runs in a git worktree whose `.git` metadata lives in another folder, Codex cannot
+commit: launch it from the worktree, tell it to leave its changes uncommitted, and have Claude
+create the commits after reviewing them.
 
-- Paquete del diff: `bash "$SDD/scripts/review-package" PLAN_FILE BASE HEAD`.
-- Revisor del lote: `Agent` general-purpose con **model: sonnet**, usando la plantilla
-  `$SDD/task-reviewer-prompt.md` (briefs + reporte + paquete + restricciones globales).
-- Además, Claude corre las pruebas él mismo una vez por lote; el reporte de Codex no
-  sustituye esa comprobación.
-- Si hay hallazgos: lee `$SDD/references/fix-loop.md` antes de cada ronda. Las rondas
-  1-3 se piden a `codex:codex-rescue` con `--resume`; la 4-5, con un encargo nuevo y
-  `--fresh`.
-- Completa el lote en el ledger como la original.
+## Review (Claude)
+
+- Diff package: `bash "$SDD/scripts/review-package" PLAN_FILE BASE HEAD`.
+- Batch reviewer: a general-purpose `Agent` with **model: sonnet**, using the
+  `$SDD/task-reviewer-prompt.md` template (briefs + report + package + global constraints).
+- On top of that, Claude runs the tests itself once per batch; Codex's report does not replace
+  that check.
+- If there are findings: read `$SDD/references/fix-loop.md` before each round. Rounds 1-3 go to
+  `codex:codex-rescue` with `--resume`; rounds 4-5 get a new brief and `--fresh`.
+- Complete the batch in the ledger as in the original.
 
 ## Final
 
-- Revisión de toda la rama con **model: opus**, siguiendo `$SDD/references/final-review.md`.
-- Si el plan cambia la estructura (módulos, servicios, tablas), ofrecer al usuario un diagrama
-  `archify` del antes y después (architecture delta o `erd`) para revisar el MR. Local, en
-  `.archify/`; no se commitea.
-- **Registro en git, no en archivos.** Superpowers borra su carpeta de trabajo al terminar y
-  la idea es no acumular documentos. Antes de borrarla, pasa lo que vale la pena a git:
-  - La **descripción del PR/MR**, en español y lenguaje natural: qué se pidió (enlace a la
-    spec o al traspaso si existe), qué se decidió (todas las líneas `Ruling:` del ledger, con
-    su porqué), qué hizo Codex (lotes y commits), qué revisó Claude y qué se corrigió, y las
-    pruebas (comando y resultado).
-  - Si el trabajo no termina en PR/MR, lo mismo va en el cuerpo del último commit.
-  - No se crean archivos de registro dentro del repo.
-- Cierre: abrir PR/MR y dar el enlace. **Nunca** merge local, **nunca** borrar la rama
-  ni el worktree que la sostiene.
-- Contarle al usuario qué hizo Codex (lotes, commits) y qué hizo Claude (plan, revisión,
-  correcciones pedidas).
+- Whole-branch review with **model: opus**, following `$SDD/references/final-review.md`.
+- If the plan changes the structure (modules, services, tables), offer the user an `archify`
+  before/after diagram (architecture delta or `erd`) to review the PR/MR. Local, in `.archify/`;
+  not committed.
+- **Record in git, not in files.** Superpowers deletes its workspace when it finishes, and the
+  goal is not to pile up documents. Before deleting it, move what matters into git:
+  - The **PR/MR description**, in the user's language and plain words: what was asked (link to
+    the spec or handoff if there is one), what was decided (every `Ruling:` line from the
+    ledger, with its reason), what Codex did (batches and commits), what Claude reviewed and
+    what was fixed, and the tests (command and result).
+  - If the work does not end in a PR/MR, the same goes in the body of the last commit.
+  - No log files are created inside the repo.
+- Wrap-up: open the PR/MR and share the link. **Never** merge locally, **never** delete the
+  branch or the worktree holding it.
+- Tell the user what Codex did (batches, commits) and what Claude did (plan, review, fixes
+  requested).

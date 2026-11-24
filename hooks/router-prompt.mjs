@@ -1,7 +1,8 @@
-// Hook UserPromptSubmit de Claude Code.
-// Lee el mensaje del usuario, lo normaliza (minúsculas, sin tildes) y solo inyecta
-// contexto cuando coincide con alguna regla. Si nada coincide, no imprime nada.
-// Un solo proceso por mensaje: evita lanzar varios scripts en paralelo.
+// Claude Code UserPromptSubmit hook.
+// Reads the user's message, normalizes it (lowercase, no accents) and only injects context
+// when it matches a rule. If nothing matches, it prints nothing.
+// One process per message: avoids launching several scripts in parallel.
+// Patterns match both English and Spanish keywords.
 import { readFileSync } from "node:fs";
 
 let prompt = "";
@@ -14,14 +15,14 @@ const text = prompt.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
 
 const rules = [
   {
-    // Requisitos / producto → skill analista
-    match: /(requisit|requerimient|\bprd\b|historias? de usuario|criterios? de aceptacion|epicas?|product brief|levantamiento|documento de requisit|definir (el )?alcance|backlog|requirement|user stor|acceptance criteria)/,
-    text: "INSTRUCCION AUTOMATICA: El usuario habla de definicion de requisitos o de producto. Invoca la skill analista: clasifica el nivel 0-4, entrevista con grilling, produce los artefactos BMAD segun el nivel y deja docs/handoff-specifier.md como Spec para superpowers:writing-plans. Si la idea esta a medio formar, ofrece antes bmad-forge-idea. NO uses las skills de BMAD de implementacion (bmad-build, bmad-agent-*, bmad-code-review, bmad-qa-*): la implementacion va por writing-plans + codex-driven-development. Toda decision que no se cierre se registra como supuesto explicito con su riesgo.",
+    // Requirements / product → analista skill
+    match: /(requirement|user stor|acceptance criteria|\bprd\b|\bepics?\b|product brief|define (the )?scope|backlog|requisit|requerimient|historias? de usuario|criterios? de aceptacion|epicas?|levantamiento|definir (el )?alcance)/,
+    text: "AUTOMATIC INSTRUCTION: The user is talking about requirements or product definition. Invoke the analista skill: classify the level 0-4, interview with grilling, produce the BMAD artifacts for that level and leave docs/handoff-specifier.md as the Spec for superpowers:writing-plans. If the idea is half-formed, offer bmad-forge-idea first. Do NOT use BMAD implementation skills (bmad-build, bmad-agent-*, bmad-code-review, bmad-qa-*): implementation goes through writing-plans + codex-driven-development. Every decision that is not settled is recorded as an explicit assumption with its risk.",
   },
   {
-    // Flujo Claude + Codex: solo si el mensaje habla de código.
-    match: /(codigo|implement|programa|desarroll|funcionalidad|feature|\bbug|arregl|corrig|refactor|funcion|componente|endpoint|\bapi\b|servicio|\btest|prueba unitaria|migracion|\bschema|base de datos|commit|\bpr\b|\bmr\b|merge|rama|deploy|despleg|script|codex|superpowers|plan de implementacion|\bcode\b|\bfix\b|branch)/,
-    text: "RECORDATORIO FLUJO CLAUDE + CODEX: si este mensaje implica escribir o cambiar codigo, aplica el reparto de ~/.claude/CLAUDE.md («Trabajo en equipo: Claude Code + Codex»). Claude entiende, explica, disena, especifica y revisa; las implementaciones grandes y bien acotadas se delegan a Codex (subagente codex:codex-rescue) con un encargo autocontenido (objetivo, archivos, criterios de aceptacion, como probar, que no tocar). Antes de delegar, di al usuario que delegas y por que, y espera su si; al volver, revisa el diff, ejecuta las pruebas y cuenta que hizo cada uno. No delegues preguntas, cambios pequenos ni decisiones de diseno. Nunca actives el review gate de Codex. Si el mensaje no implica codigo, ignora este recordatorio.",
+    // Claude + Codex flow: only when the message is about code.
+    match: /(\bcode\b|implement|program|develop|feature|\bbug|\bfix|refactor|function|component|endpoint|\bapi\b|service|\btest|unit test|migration|\bschema|database|commit|\bpr\b|\bmr\b|merge|branch|deploy|script|codex|superpowers|implementation plan|codigo|desarroll|funcionalidad|arregl|corrig|funcion|componente|servicio|prueba unitaria|migracion|base de datos|rama|despleg|plan de implementacion)/,
+    text: "CLAUDE + CODEX FLOW REMINDER: if this message involves writing or changing code, apply the split in ~/.claude/CLAUDE.md (\"Teamwork: Claude Code + Codex\"). Claude understands, explains, designs, specifies and reviews; large, well-scoped implementations are delegated to Codex (the codex:codex-rescue subagent) with a self-contained brief (goal, files, acceptance criteria, how to test, what not to touch). Before delegating, tell the user what you are delegating and why, and wait for their yes; when Codex comes back, review the diff, run the tests and say what each one did. Do not delegate questions, small changes or design decisions. Never turn on Codex's review gate. If the message does not involve code, ignore this reminder.",
   },
 ];
 
