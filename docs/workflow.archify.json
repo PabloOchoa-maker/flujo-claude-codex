@@ -2,51 +2,51 @@
   "schema_version": 2,
   "diagram_type": "workflow",
   "meta": {
-    "title": "Flujo de trabajo: Claude Code + Codex",
-    "locale": "es",
+    "title": "Workflow: Claude Code + Codex",
+    "locale": "en",
     "quality_profile": "showcase",
     "output": "docs/index.html"
   },
   "lanes": [
     {
       "id": "persona",
-      "label": "Tú (decides y apruebas)"
+      "label": "You (decide and approve)"
     },
     {
       "id": "claude",
-      "label": "Claude Code (entiende, especifica, revisa)"
+      "label": "Claude Code (understands, specifies, reviews)"
     },
     {
       "id": "atajo",
-      "label": "Atajo: feature chica",
+      "label": "Shortcut: small feature",
       "variant": "exception"
     },
     {
       "id": "codex",
-      "label": "Codex (implementa)"
+      "label": "Codex (implements)"
     },
     {
       "id": "repo",
-      "label": "Repositorio / git"
+      "label": "Repository / git"
     }
   ],
   "phases": [
     {
       "id": "definir",
-      "label": "Definir",
+      "label": "Define",
       "fromCol": 0,
       "toCol": 1
     },
     {
       "id": "planificar",
-      "label": "Planificar + aprobar",
+      "label": "Plan + approve",
       "fromCol": 2,
       "toCol": 3,
       "variant": "emphasis"
     },
     {
       "id": "construir",
-      "label": "Implementar + revisar",
+      "label": "Build + review",
       "fromCol": 4,
       "toCol": 5,
       "variant": "dashed"
@@ -68,17 +68,17 @@
       "lane": "persona",
       "col": 0,
       "type": "external",
-      "label": "Idea o pedido",
-      "sublabel": "a medio formar"
+      "label": "Idea or request",
+      "sublabel": "half-formed"
     },
     {
       "id": "aprueba",
       "lane": "persona",
       "col": 3,
       "type": "security",
-      "label": "«Sí» al plan",
-      "sublabel": "permiso para delegar",
-      "tag": "puerta"
+      "label": "“Yes” to the plan",
+      "sublabel": "permission to delegate",
+      "tag": "gate"
     },
     {
       "id": "forge",
@@ -86,7 +86,7 @@
       "col": 0,
       "type": "backend",
       "label": "bmad-forge-idea",
-      "sublabel": "opcional: pulir idea"
+      "sublabel": "optional: sharpen idea"
     },
     {
       "id": "analista",
@@ -95,7 +95,7 @@
       "type": "backend",
       "label": "/analista",
       "sublabel": "grilling + BMAD",
-      "tag": "niveles 2-4"
+      "tag": "levels 2-4"
     },
     {
       "id": "plan",
@@ -103,15 +103,15 @@
       "col": 2,
       "type": "backend",
       "label": "writing-plans",
-      "sublabel": "lotes con criterios"
+      "sublabel": "batches with criteria"
     },
     {
       "id": "revision",
       "lane": "claude",
       "col": 5,
       "type": "security",
-      "label": "Revisión",
-      "sublabel": "diff + pruebas",
+      "label": "Review",
+      "sublabel": "diff + tests",
       "tag": "verification"
     },
     {
@@ -120,7 +120,7 @@
       "col": 1,
       "type": "backend",
       "label": "brainstorming",
-      "sublabel": "en vez de /analista"
+      "sublabel": "instead of /analista"
     },
     {
       "id": "codex",
@@ -128,7 +128,7 @@
       "col": 4,
       "type": "messagebus",
       "label": "codex-driven-dev",
-      "sublabel": "encargo autocontenido",
+      "sublabel": "self-contained brief",
       "tag": "Codex"
     },
     {
@@ -144,16 +144,16 @@
       "lane": "repo",
       "col": 2,
       "type": "database",
-      "label": "docs/encargos/",
-      "sublabel": "AAAA-MM-DD-tema.md"
+      "label": "docs/briefs/",
+      "sublabel": "YYYY-MM-DD-topic.md"
     },
     {
       "id": "rama",
       "lane": "repo",
       "col": 4,
       "type": "database",
-      "label": "Rama / worktree",
-      "sublabel": "commits del lote"
+      "label": "Branch / worktree",
+      "sublabel": "batch commits"
     },
     {
       "id": "pr",
@@ -161,8 +161,8 @@
       "col": 5,
       "type": "cloud",
       "label": "PR / MR",
-      "sublabel": "registro de lo hecho",
-      "tag": "nunca merge local"
+      "sublabel": "record of the work",
+      "tag": "never merge locally"
     }
   ],
   "edges": [
@@ -170,7 +170,7 @@
       "id": "e-idea-forge",
       "from": "idea",
       "to": "forge",
-      "label": "pedido"
+      "label": "request"
     },
     {
       "id": "e-forge-analista",
@@ -189,7 +189,7 @@
       "id": "e-analista-docs",
       "from": "analista",
       "to": "handoff",
-      "label": "requisitos",
+      "label": "requirements",
       "variant": "dashed",
       "role": "branch"
     },
@@ -197,7 +197,7 @@
       "id": "e-idea-brain",
       "from": "idea",
       "to": "brainstorm",
-      "label": "feature chica",
+      "label": "small feature",
       "variant": "dashed",
       "role": "branch"
     },
@@ -212,7 +212,7 @@
       "id": "e-plan-file",
       "from": "plan",
       "to": "planfile",
-      "label": "guarda",
+      "label": "saves",
       "variant": "dashed",
       "role": "branch"
     },
@@ -220,21 +220,21 @@
       "id": "e-plan-aprueba",
       "from": "plan",
       "to": "aprueba",
-      "label": "propone",
+      "label": "proposes",
       "variant": "emphasis"
     },
     {
       "id": "e-aprueba-codex",
       "from": "aprueba",
       "to": "codex",
-      "label": "delegar lotes",
+      "label": "delegate batches",
       "variant": "security"
     },
     {
       "id": "e-codex-rama",
       "from": "codex",
       "to": "rama",
-      "label": "implementa",
+      "label": "implements",
       "variant": "dashed",
       "role": "branch"
     },
@@ -242,13 +242,13 @@
       "id": "e-codex-rev",
       "from": "codex",
       "to": "revision",
-      "label": "resumen + diff"
+      "label": "summary + diff"
     },
     {
       "id": "e-rev-codex",
       "from": "revision",
       "to": "codex",
-      "label": "corregir",
+      "label": "fix",
       "variant": "security",
       "role": "error"
     },
@@ -256,36 +256,36 @@
       "id": "e-rev-pr",
       "from": "revision",
       "to": "pr",
-      "label": "pruebas OK",
+      "label": "tests pass",
       "variant": "emphasis"
     }
   ],
   "cards": [
     {
       "dot": "cyan",
-      "title": "Quién hace qué",
+      "title": "Who does what",
       "items": [
-        "Claude: entiende, diseña, especifica, revisa y mide",
-        "Codex: tareas grandes y bien acotadas",
-        "Antes de delegar, Claude avisa y espera tu «sí»"
+        "Claude: understands, designs, specifies, reviews and measures",
+        "Codex: large, well-scoped tasks",
+        "Before delegating, Claude says so and waits for your “yes”"
       ]
     },
     {
       "dot": "amber",
-      "title": "Sin delegar ni Superpowers",
+      "title": "No delegation, no Superpowers",
       "items": [
-        "Preguntas, explicaciones y cambios pequeños: Claude directo",
-        "Bug no obvio: systematic-debugging",
-        "Documentos, memoria y config: fuera de Superpowers"
+        "Questions, explanations and small changes: Claude directly",
+        "Non-obvious bug: systematic-debugging",
+        "Documents, memory and config: outside Superpowers"
       ]
     },
     {
       "dot": "violet",
       "title": "Extras",
       "items": [
-        "Revisar un PR uno mismo: bmad-walkthrough",
-        "Diagramas: archify en .archify/ (no se commitea)",
-        "Hooks: router de recordatorios y candados de git"
+        "Review a PR yourself: bmad-walkthrough",
+        "Diagrams: archify in .archify/ (not committed)",
+        "Hooks: reminder router and git guards"
       ]
     }
   ]
