@@ -5,7 +5,8 @@ description: Use INSTEAD OF superpowers:subagent-driven-development when executi
 
 # Codex-Driven Development
 
-Versión adaptada de `superpowers:subagent-driven-development` al reparto Claude + Codex:
+Versión adaptada de `superpowers:subagent-driven-development`
+([obra/superpowers](https://github.com/obra/superpowers), MIT, © 2025 Jesse Vincent) al reparto Claude + Codex:
 **Claude coordina y revisa; Codex implementa.** Todo lo que esta skill no cambia se
 hace como en la original (ledger, preflight, ciclo de correcciones, revisión final).
 
